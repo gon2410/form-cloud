@@ -23,7 +23,7 @@ const mensajeModalError = document.querySelector("#modalErr");
 document.querySelector("#inviform").addEventListener("submit", function(e){
     e.preventDefault();
 
-    first_name = usernameField.value;
+    first_name = firstnameField.value;
     last_name = lastnameField.value;
     let menu;
 
@@ -55,10 +55,11 @@ document.querySelector("#inviform").addEventListener("submit", function(e){
     .then((response) => response.json())
     .then((data) => {
         if (data.username_error) {
+            submitBtn.setAttribute("disabled", "");
             mensajeModalError.innerHTML = `<p class="modal-title" style="color: black; font-weight: 500;">${data.username_error}</p> 
                                                             <span aria-hidden="true">&#9940;</span>`
             miModalError.show()
-            usernameField.value = "";
+            firstnameField.value = "";
             lastnameField.value = "";
 
             menu1.checked = false;
@@ -73,7 +74,7 @@ document.querySelector("#inviform").addEventListener("submit", function(e){
             mensajeModalExito.innerHTML = `<p class="modal-title" style="text-align: center; color: white; font-weight: 500;">${data.username_success} &#128515;</p>
                                                                 <span aria-hidden="true">&#9989;</span>`
             miModalSuccess.show()
-            usernameField.value = "";
+            firstnameField.value = "";
             lastnameField.value = "";
 
             menu1.checked = false;

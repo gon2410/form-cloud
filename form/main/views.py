@@ -16,8 +16,9 @@ class UsernameValidationView(View):
 
     def post(self, request):
         data = json.loads(request.body)
-        username = data['first_name']
-        if any((c in chars) for c in username):
+        print(data)
+        firstname = data['first_name']
+        if any((c in chars) for c in firstname):
             return JsonResponse({'username_error': True}, status=400)
 
         return JsonResponse({'username_valid': True})
@@ -41,16 +42,14 @@ class RegistrationView(View):
 
     def post(self, request):
         
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
+        first_name = request.POST.get('first_name').title()
+        last_name = request.POST.get('last_name').title()
         menu = request.POST.get('menu')
 
         # context = {
         #     'fieldValues': request.POST
         # }
 
-        first_name = first_name.title()
-        last_name = last_name.title()
         nombre_completo = last_name + " " + first_name
 
         if len(first_name) == 0 or len(last_name) == 0 or menu == 'none':

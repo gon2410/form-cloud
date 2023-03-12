@@ -1,33 +1,29 @@
 // nombre
-const usernameField = document.querySelector("#usernameField");
-const usernameSuccessOutput = document.querySelector(".usernameSuccessOutput");
-const feedBackArea = document.querySelector(".invalid_feedback");
+const firstnameField = document.querySelector("#firstnameField");
 
 // apellido
 const lastnameField = document.querySelector("#lastnameField");
-const lastnameSuccessOutput = document.querySelector(".lastnameSuccessOutput");
-const lastfeedBackArea = document.querySelector(".last_invalid_feedback");
 
 // boton de confirmacion
 const submitBtn = document.querySelector("#boton_de_confirmacion");
 
-usernameField.addEventListener("keyup", (e) => {
+firstnameField.addEventListener("keyup", (e) => {
     e.preventDefault();
 
-    const usernameVal = e.target.value;
+    const firstnameVal = e.target.value;
 
-    usernameField.classList.remove("is-invalid");
+    firstnameField.classList.remove("is-invalid");
     submitBtn.removeAttribute("disabled");
-    if (usernameVal.length > 0) {
+    if (firstnameVal.length > 0) {
         fetch("/validate-username", {
-            body: JSON.stringify({ first_name: usernameVal }),
+            body: JSON.stringify({ first_name: firstnameVal }),
             method: "POST",
         })
             .then((res) => res.json())
             .then((data) => {
                 // console.log("data", data)
                 if (data.username_error) {
-                    usernameField.classList.add("is-invalid");
+                    firstnameField.classList.add("is-invalid");
                     submitBtn.disabled = true;
                 }            
             });
@@ -53,7 +49,6 @@ lastnameField.addEventListener("keyup", (e) => {
                     lastnameField.classList.add("is-invalid");
                     submitBtn.disabled = true;
                 }
-        
             });
     }
 });
