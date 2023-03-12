@@ -11,7 +11,6 @@ passwd.addEventListener("keyup", (e) => {
     passwd.classList.remove("is-invalid");
     passwd.classList.remove("is-valid");
     
-
     if (passwordVal.length > 0) {
         fetch("/validate-password", {
             body: JSON.stringify({ password: passwordVal }),

@@ -9,12 +9,12 @@ from django.http import HttpResponse, JsonResponse
 from django.views import View
 
 
+chars = tuple(string.punctuation + string.digits + "¨" + "´" + "`")
+
 # validacion del nombre
 class UsernameValidationView(View):
 
     def post(self, request):
-        chars = tuple(string.punctuation + string.digits + "¨")
-
         data = json.loads(request.body)
         username = data['first_name']
         if any((c in chars) for c in username):
@@ -26,9 +26,8 @@ class UsernameValidationView(View):
 # validacion del apellido
 class LastnameValidationView(View):
     def post(self, request):
-        chars = tuple(string.punctuation + string.digits + "¨")
-
         data = json.loads(request.body)
+        print(data)
         lastname = data['last_name']
         if any((c in chars) for c in lastname):
             return JsonResponse({'lastname_error': True}, status=400)
@@ -46,11 +45,13 @@ class RegistrationView(View):
         last_name = request.POST.get('last_name')
         menu = request.POST.get('menu')
 
-        context = {
-            'fieldValues': request.POST
-        }
+        # context = {
+        #     'fieldValues': request.POST
+        # }
 
-        nombre_completo = last_name.title() + " " + first_name.title()
+        first_name = first_name.title()
+        last_name = last_name.title()
+        nombre_completo = last_name + " " + first_name
 
         if len(first_name) == 0 or len(last_name) == 0 or menu == 'none':
             return JsonResponse({'username_error': 'COMPLETAR LOS CAMPOS EN BLANCO'}, status=400)
@@ -104,7 +105,6 @@ class PasswordView(View):
             invitados_veganos = User.objects.filter(email="Vegano").count()
             invitados_celiacos = User.objects.filter(email="Celiaco").count()
 
-
             response = HttpResponse(content_type="application/ms-excel")
 
             response['Content-Disposition'] = 'attachment; filename=MenuInvitados' + \
@@ -137,7 +137,7 @@ class PasswordView(View):
 
             sorted_table = User.objects.order_by('username')
             rows = User.objects.all().order_by('last_name').values_list('username', 'email')
-            print(rows)
+            #print(rows)
             for row in rows:
                 row_num += 1
                 for col_num in range(len(row)):
