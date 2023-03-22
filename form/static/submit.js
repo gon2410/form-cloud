@@ -56,7 +56,7 @@ document.querySelector("#inviform").addEventListener("submit", function(e){
     .then((data) => {
         if (data.username_error) {
             submitBtn.setAttribute("disabled", "");
-            mensajeModalError.innerHTML = `<p class="modal-title" style="color: black; font-weight: 500;">${data.username_error}</p> 
+            mensajeModalError.innerHTML = `<p class="modal-title" style="font-weight: 500;">${data.username_error}</p> 
                                                             <span aria-hidden="true">&#9940;</span>`
             miModalError.show()
             firstnameField.value = "";
@@ -71,7 +71,7 @@ document.querySelector("#inviform").addEventListener("submit", function(e){
                 miModalError.hide()
             }, 2000)
         } else {
-            mensajeModalExito.innerHTML = `<p class="modal-title" style="text-align: center; color: white; font-weight: 500;">${data.username_success} &#128515;</p>
+            mensajeModalExito.innerHTML = `<p class="modal-title" style="text-align: center; font-weight: 500;">${data.username_success} &#128515;</p>
                                                                 <span aria-hidden="true">&#9989;</span>`
             miModalSuccess.show()
             firstnameField.value = "";

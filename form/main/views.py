@@ -1,12 +1,20 @@
-import datetime
 import json
-import xlwt
 import string
 
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from django.views import View
+
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+
+# Connect to Google Sheets
+scope = ['https://www.googleapis.com/auth/spreadsheets',
+        "https://www.googleapis.com/auth/drive"]
+
+credentials = ServiceAccountCredentials.from_json_keyfile_name("solid-solstice-297612-29966102b7e1.json", scope)
+client = gspread.authorize(credentials)
 
 
 chars = tuple(string.punctuation + string.digits + "¨" + "´" + "`")
@@ -16,7 +24,6 @@ class UsernameValidationView(View):
 
     def post(self, request):
         data = json.loads(request.body)
-        print(data)
         firstname = data['first_name']
         if any((c in chars) for c in firstname):
             return JsonResponse({'username_error': True}, status=400)
@@ -28,15 +35,37 @@ class UsernameValidationView(View):
 class LastnameValidationView(View):
     def post(self, request):
         data = json.loads(request.body)
-        print(data)
         lastname = data['last_name']
         if any((c in chars) for c in lastname):
             return JsonResponse({'lastname_error': True}, status=400)
 
         return JsonResponse({'lastname_valid': True})
 
+def update_counters(sheet):
+    sinco_counter = 0
+    veget_counter = 0
+    vegan_counter = 0
+    celia_counter = 0
+    for i in sheet.col_values(2):
+        if i == "Sin Condicion":
+            sinco_counter += 1
+        elif i == "Vegetariano":
+            veget_counter += 1
+        elif i == "Vegano":
+            vegan_counter += 1
+        elif i == "Celiaco":
+            celia_counter += 1
+
+    sheet.update('D1', [["Total de Invitados"]])
+    sheet.update('D2', [["Sin Condicion", sinco_counter]])
+    sheet.update('D3', [["Vegetariano", veget_counter]])
+    sheet.update('D4', [["Vegano", vegan_counter]])
+    sheet.update('D5', [["Celiaco", celia_counter]])
+
 # validacion y registro de usuario en la base de datos
 class RegistrationView(View):
+    
+    
     def get(self, request):
         return render(request, 'main/index.html')
 
@@ -57,92 +86,21 @@ class RegistrationView(View):
         elif User.objects.filter(username=nombre_completo).exists():
             return JsonResponse({'username_error': 'YA HAY UN INVITADO REGISTRADO CON ESE NOMBRE'}, status=400)
         else:
+            sheet = client.open("test").sheet1
+
             data = {'first_name': first_name, 'last_name': last_name, 'menu':menu, 'username_success': 'ASISTENCIA CONFIRMADA'}
             user = User.objects.create_user(username=nombre_completo, first_name=first_name, last_name=last_name, email=menu)
+    
+            next_row = len(sheet.col_values(1)) + 1
+            sheet.update('A{}'.format(next_row), [[nombre_completo, menu]])
+
+            update_counters(sheet)
+
             user.set_unusable_password()
             user.is_active = False
             user.save()
+
             return JsonResponse(data, safe=False)
 
 
-        return render(request, 'main/index.html')
-
-
-
-
-# validacion de contraseña
-class PasswordValidation(View):
-    def post(self, request):
-        passwd = "xyzboda012"
-        data = json.loads(request.body)
-        password = data['password']
-        if not str(password) == passwd:
-            return JsonResponse({'password_error': 'true'}, status=400)
-
-        return JsonResponse({'password_valid': True})
-
-
-# creacion del archivo excel despues de validar contraseña
-class PasswordView(View):
-    def get(self, request):
-        return render(request, 'main/index.html')
-
-    def post(self, request):
-        passwd = "xyzboda012"
-
-        password = request.POST.get('password')
-        
-        context = {
-            'fieldValues': request.POST
-        }
-
-        if password == passwd:
-
-            invitados_count = User.objects.all().count() -1
-            invitados_sincondicion = User.objects.filter(email="Sin Condicion").count()
-            invitados_vegetarianos = User.objects.filter(email="Vegetariano").count()
-            invitados_veganos = User.objects.filter(email="Vegano").count()
-            invitados_celiacos = User.objects.filter(email="Celiaco").count()
-
-            response = HttpResponse(content_type="application/ms-excel")
-
-            response['Content-Disposition'] = 'attachment; filename=MenuInvitados' + \
-                                            str(datetime.datetime.now()) + '.xls'
-
-            wb = xlwt.Workbook(encoding='utf-8')
-
-            ws = wb.add_sheet('Invitados')
-
-            row_num = 8
-
-            font_style = xlwt.XFStyle()
-            font_style.font.bold = True
-
-            ws.write(0, 0, "Total de invitados = " + str(invitados_count), font_style)
-            ws.write(1, 0, "Total de invitados sin condicion = " + str(invitados_sincondicion), font_style)
-            ws.write(2, 0, "Total de invitados vegetarianos = " + str(invitados_vegetarianos), font_style)
-            ws.write(3, 0, "Total de invitados veganos = " + str(invitados_veganos), font_style)
-            ws.write(4, 0, "Total de invitados celiacos = " + str(invitados_celiacos), font_style)
-
-
-            ws.write(6, 0, "Lista de Invitados", font_style)
-            columns = ['Nombre', 'Menu']
-
-
-            for col_num in range(len(columns)):
-                ws.write(row_num, col_num, columns[col_num], font_style)
-
-            font_style = xlwt.XFStyle()
-
-            sorted_table = User.objects.order_by('username')
-            rows = User.objects.all().order_by('last_name').values_list('username', 'email')
-            #print(rows)
-            for row in rows:
-                row_num += 1
-                for col_num in range(len(row)):
-                    ws.write(row_num, col_num, row[col_num], font_style)
-
-            wb.save(response)
-
-            return response
         return render(request, 'main/index.html')

@@ -7,11 +7,13 @@ const lastnameField = document.querySelector("#lastnameField");
 // boton de confirmacion
 const submitBtn = document.querySelector("#boton_de_confirmacion");
 
+
 firstnameField.addEventListener("keyup", (e) => {
     e.preventDefault();
 
     const firstnameVal = e.target.value;
 
+    submitBtn.disabled = true;
     firstnameField.classList.remove("is-invalid");
     submitBtn.removeAttribute("disabled");
     if (firstnameVal.length > 0) {
