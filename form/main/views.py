@@ -82,13 +82,13 @@ class RegistrationView(View):
         nombre_completo = last_name + " " + first_name
 
         if len(first_name) == 0 or len(last_name) == 0 or menu == 'none':
-            return JsonResponse({'username_error': 'COMPLETAR LOS CAMPOS EN BLANCO'}, status=400)
+            return JsonResponse({'username_error': 'FILL BLANK FIELDS!'}, status=400)
         elif User.objects.filter(username=nombre_completo).exists():
-            return JsonResponse({'username_error': 'YA HAY UN INVITADO REGISTRADO CON ESE NOMBRE'}, status=400)
+            return JsonResponse({'username_error': 'A GUEST WITH THAT NAME ALREADY EXISTS'}, status=400)
         else:
             sheet = client.open("test").sheet1
 
-            data = {'first_name': first_name, 'last_name': last_name, 'menu':menu, 'username_success': 'ASISTENCIA CONFIRMADA'}
+            data = {'first_name': first_name, 'last_name': last_name, 'menu':menu, 'username_success': 'CONFIRMED SUCCESSFULLY'}
             user = User.objects.create_user(username=nombre_completo, first_name=first_name, last_name=last_name, email=menu)
     
             next_row = len(sheet.col_values(1)) + 1
